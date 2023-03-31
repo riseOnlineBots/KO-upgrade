@@ -28,8 +28,9 @@ class WindowCapture:
             self.hwnd = win32gui.GetDesktopWindow()
         else:
             self.hwnd = win32gui.FindWindow(None, window_name)
-            # self.hwnd = win32gui.GetWindow(self.hwnd, win32con.GW_CHILD)
+            # Sets the app as active.
             win32gui.SetForegroundWindow(self.hwnd)
+
             if not self.hwnd:
                 raise Exception('Window not found: {}'.format(window_name))
 
@@ -39,8 +40,8 @@ class WindowCapture:
         self.h = window_rect[3] - window_rect[1]
 
         # account for the window border and titlebar and cut them off
-        border_pixels = 8
-        self.w = self.w - (border_pixels * 2)
+        border_pixels = 16
+        self.w = self.w - border_pixels
 
         self.cropped_x = 5
         self.cropped_y = 30
@@ -49,10 +50,11 @@ class WindowCapture:
         # images into actual screen positions
         self.offset_x = window_rect[0] + self.cropped_x
         self.offset_y = window_rect[1] + self.cropped_y
-        print(window_rect)
+
+        # Moves the active window to top-left, so the calculations will work properly on every screen res.
+        win32gui.MoveWindow(self.hwnd, 0, 0, self.w + border_pixels, self.h, True)
 
     def get_screenshot(self):
-
         # get the window image data
         wDC = win32gui.GetWindowDC(self.hwnd)
         dcObj = win32ui.CreateDCFromHandle(wDC)
@@ -97,7 +99,7 @@ class WindowCapture:
         win32gui.EnumWindows(winEnumHandler, None)
 
     def get_screen_position(self, pos):
-        return (pos[0] + self.offset_x, pos[1] + self.offset_y)
+        return pos[0] + self.offset_x, pos[1] + self.offset_y
 
     def start(self):
         self.stopped = False

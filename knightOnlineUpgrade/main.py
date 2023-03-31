@@ -1,13 +1,13 @@
 import os
-import sys
 from threading import Thread
-from time import time, sleep
+from time import sleep
 
 import cv2 as cv
 import win32api
 import win32con
 from pynput.mouse import Controller as MouseController
 
+import colorfulText
 from vision import Vision
 from windowcapture import WindowCapture
 
@@ -22,7 +22,8 @@ class StateEnum:
     READY = 1
     UPGRADING = 2
     UPGRADED = 3
-    INVENTORY_COMPLETED = 4  # Lets us re-initialize when whole inventory is completed.
+    STOPPED = 4
+    INVENTORY_COMPLETED = 5  # Lets us re-initialize when whole inventory is completed.
 
 
 class DebugEnum:
@@ -41,16 +42,15 @@ confirm_button_one_position = []
 confirm_button_two_position = []
 item_positions = []
 upgraded_items = []
-stage = 2
+stage = 1
 max_stage = 7
-game_upgrade_limit = 31
+game_upgrade_limit = 27
 
 for i in list(range(3))[::-1]:
     print('Starting in ', i + 1)
     sleep(1)
 
 print('Get ready! All upgradable slots will be upgraded to +{}.'.format(max_stage))
-loop_time = time()
 
 state = StateEnum.INITIALIZING
 
@@ -117,7 +117,7 @@ def detect_confirm_button_two():
     positions = vision.get_click_points(rectangles)
 
     if not positions:
-        print("Unable to find 2nd confirm button.")
+        print("Unable to find the 2nd confirm button.")
         stop()
 
     confirm_button_two_position = wincap.get_screen_position(positions[0])
@@ -141,7 +141,7 @@ def upgrade_the_item():
     y = confirm_button_one_position[1]
 
     press_left((x, y + 15))
-    sleep(0.2)
+    sleep(0.1)
 
     if not confirm_button_two_position:
         detect_confirm_button_two()
@@ -204,45 +204,56 @@ def press_left(pos):
 
 
 def stop():
+    global state
+    colorfulText.text("...BOT HAS BEEN TERMINATED...")
     cv.destroyAllWindows()
-    sys.exit()
+    state = StateEnum.STOPPED
 
 
 def run():
-    global upgraded_items, item_positions, stage, max_stage, game_upgrade_limit
+    global upgraded_items, item_positions, stage, max_stage, game_upgrade_limit, state
 
-    print('Total: {} Current: {} - availability: {}'.format(len(item_positions) + 1, len(upgraded_items) + 1,
-                                                            game_upgrade_limit))
+    if state != StateEnum.STOPPED:
+        print('Total: {} Current: {} - availability: {}'.format(len(item_positions) + 1, len(upgraded_items) + 1,
+                                                                game_upgrade_limit))
 
-    if len(item_positions) == len(upgraded_items):
-        if stage == max_stage:
-            print('All slots have been upgraded to the desired level: {} '.format(stage + 1))
-            stop()
+        if len(item_positions) == len(upgraded_items):
+            if stage == max_stage:
+                print('All slots have been upgraded to the desired level: {} '.format(stage + 1))
+                stop()
+            else:
+                stage += 1
+
+                print('All items are upgraded. Preparing the next stage.')
+
+                upgraded_items = []
+                item_positions = []
+                sleep(1)
+                initialize_upgradable_items()
+                run()
         else:
-            stage += 1
+            detect_and_click_first_upgradable_item()
+            sleep(0.2)
+            click_upgrade_scroll()
+            sleep(0.2)
+            upgrade_the_item()
 
-            print('All items are upgraded. Preparing the next stage.')
+            game_upgrade_limit -= 1
 
-            upgraded_items = []
-            item_positions = []
-            sleep(1)
-            initialize_upgradable_items()
-            run()
-    else:
-        detect_and_click_first_upgradable_item()
-        sleep(0.2)
-        click_upgrade_scroll()
-        sleep(0.2)
-        upgrade_the_item()
+            if game_upgrade_limit == 0:
+                for _ in range(3):
+                    colorfulText.text('Upgrade limit exceeded. Restart the game.')
 
-        game_upgrade_limit -= 1
+                # ALT + F4.
+                win32api.keybd_event(0xA4, win32api.MapVirtualKey(0xA4, 0), 0, 0)
+                win32api.keybd_event(0x73, win32api.MapVirtualKey(0x73, 0), 0, 0)
+                win32api.keybd_event(0x73, win32api.MapVirtualKey(0x73, 0), win32con.KEYEVENTF_KEYUP, 0)
+                win32api.keybd_event(0xA4, win32api.MapVirtualKey(0xA4, 0), win32con.KEYEVENTF_KEYUP, 0)
 
-        if game_upgrade_limit == 0:
-            print('Upgrade limit exceeded. Restart the game.')
-            stop()
-        else:
-            # TODO: Add right click to anvil to skip the animation.
-            sleep(4.5)
+                stop()
+            else:
+                # TODO: Add right click to anvil to skip the animation.
+                sleep(4.5)
 
 
 while True:
@@ -254,10 +265,11 @@ while True:
     # image = vision.draw_rectangles(screenshot, rectangles)
     # cv.imshow('Display', image)
 
-    detect_upgrade_scroll()
-    detect_confirm_button_one()
-    initialize_upgradable_items()
-    thread = Thread(target=run())
+    if state != StateEnum.STOPPED:
+        detect_upgrade_scroll()
+        detect_confirm_button_one()
+        initialize_upgradable_items()
+        thread = Thread(target=run())
 
     key = cv.waitKey(1) & 0xFF
 

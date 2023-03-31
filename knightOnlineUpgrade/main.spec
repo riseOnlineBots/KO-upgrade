@@ -5,11 +5,11 @@ block_cipher = None
 
 
 a = Analysis(
-    ['main.py'],
+    ['C:\\Users\\undefined\\PycharmProjects\\knightOnlineUpgrade\\main.py'],
     pathex=['C:\\Users\\undefined\\AppData\\Local\\Programs\\Python\\Python39-32\\Lib\\site-packages'],
     binaries=[],
-    datas=[('items', '.')],
-    hiddenimports=['cv2'],
+    datas=[('items', 'items'), ('confirmButton1.jpg', '.'), ('confirmButton2.jpg', '.'), ('upgradeScroll.jpg', '.')],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='main',
+    name='upWork',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
