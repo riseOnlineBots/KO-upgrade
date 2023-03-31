@@ -12,7 +12,6 @@ from vision import Vision
 from windowcapture import WindowCapture
 
 # Change the working directory to the folder this script is in.
-# Doing this because I'll be putting the files from each video in their own folder on GitHub
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 mouse = MouseController()
@@ -266,4 +265,4 @@ while True:
         stop()
         break
 
- # pyinstaller.exe -F .\main.py --paths C:\Users\undefined\AppData\Local\Programs\Python\Python39-32\Lib\site-packages
+# pyinstaller.exe -F .\main.py --paths C:\Users\undefined\AppData\Local\Programs\Python\Python39-32\Lib\site-packages
