@@ -245,6 +245,7 @@ def run():
                     colorfulText.text('Upgrade limit exceeded. Restart the game.')
 
                 # ALT + F4.
+                sleep(2)
                 win32api.keybd_event(0xA4, win32api.MapVirtualKey(0xA4, 0), 0, 0)
                 win32api.keybd_event(0x73, win32api.MapVirtualKey(0x73, 0), 0, 0)
                 win32api.keybd_event(0x73, win32api.MapVirtualKey(0x73, 0), win32con.KEYEVENTF_KEYUP, 0)
