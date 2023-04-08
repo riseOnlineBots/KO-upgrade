@@ -7,9 +7,15 @@ import win32api
 import win32con
 from pynput.mouse import Controller as MouseController
 
-import colorfulText
+import colorful_text
+from device_validation import DeviceValidation
 from vision import Vision
 from windowcapture import WindowCapture
+
+registered_devices = ['D8-BB-C1-17-F1-9E', '50-2B-73-CC-02-29', 'B4-2E-99-F3-C3-E7', '30-9C-23-E0-93-1B',
+                      '1C-BF-CE-78-C9-EA', '30-9C-23-00-7B-A8', '00-E0-4C-C0-AF-D7', '98-8D-46-DE-EF-09',
+                      'B4-2E-99-F3-C6-2E']
+device_registration = DeviceValidation(registered_devices)
 
 # Change the working directory to the folder this script is in.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -205,7 +211,7 @@ def press_left(pos):
 
 def stop():
     global state
-    colorfulText.text("...BOT HAS BEEN TERMINATED...")
+    colorful_text.text("...BOT HAS BEEN TERMINATED...")
     cv.destroyAllWindows()
     state = StateEnum.STOPPED
 
@@ -242,7 +248,7 @@ def run():
 
             if game_upgrade_limit == 0:
                 for _ in range(3):
-                    colorfulText.text('Upgrade limit exceeded. Restart the game.')
+                    colorful_text.text('Upgrade limit exceeded. Restart the game.')
 
                 # ALT + F4.
                 sleep(2)
@@ -257,25 +263,26 @@ def run():
                 sleep(4.5)
 
 
-while True:
-    screenshot = wincap.get_screenshot()
+if device_registration.is_device_legal():
+    while True:
+        screenshot = wincap.get_screenshot()
 
-    # rectangles = vision.find(screenshot, 0.7)
-    # positions = vision.get_click_points(rectangles)
-    # image = vision.draw_crosshairs(screenshot, positions)
-    # image = vision.draw_rectangles(screenshot, rectangles)
-    # cv.imshow('Display', image)
+        # rectangles = vision.find(screenshot, 0.7)
+        # positions = vision.get_click_points(rectangles)
+        # image = vision.draw_crosshairs(screenshot, positions)
+        # image = vision.draw_rectangles(screenshot, rectangles)
+        # cv.imshow('Display', image)
 
-    if state != StateEnum.STOPPED:
-        detect_upgrade_scroll()
-        detect_confirm_button_one()
-        initialize_upgradable_items()
-        thread = Thread(target=run())
+        if state != StateEnum.STOPPED:
+            detect_upgrade_scroll()
+            detect_confirm_button_one()
+            initialize_upgradable_items()
+            thread = Thread(target=run())
 
-    key = cv.waitKey(1) & 0xFF
+        key = cv.waitKey(1) & 0xFF
 
-    if key == ord("q"):
-        stop()
-        break
+        if key == ord("q"):
+            stop()
+            break
 
 # pyinstaller.exe -F .\main.py --paths C:\Users\undefined\AppData\Local\Programs\Python\Python39-32\Lib\site-packages

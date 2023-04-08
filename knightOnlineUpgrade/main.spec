@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 
-block_cipher = None
+block_cipher = pyi_crypto.PyiBlockCipher(key='ffXaqEEEg?b86!6365aADEf.!!')
 
 
 a = Analysis(
