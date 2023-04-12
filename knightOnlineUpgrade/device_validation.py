@@ -24,7 +24,7 @@ class DeviceValidation:
     def validate(self):
         if not self.is_device_legal():
             for _ in range(5):
-                text("BU PROGRAMI CALISTIRAMAZSIN.", random=True)
+                text("BU PROGRAMI CALISTIRAMAZSIN.")
 
             sleep(5)
 

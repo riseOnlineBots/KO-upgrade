@@ -8,14 +8,17 @@ import win32con
 from pynput.mouse import Controller as MouseController
 
 import colorful_text
-from device_validation import DeviceValidation
+from admin_privileges import running_as_admin
 from vision import Vision
 from windowcapture import WindowCapture
 
+from device_validation import DeviceValidation
+
 registered_devices = ['D8-BB-C1-17-F1-9E', '50-2B-73-CC-02-29', 'B4-2E-99-F3-C3-E7', '30-9C-23-E0-93-1B',
                       '1C-BF-CE-78-C9-EA', '30-9C-23-00-7B-A8', '00-E0-4C-C0-AF-D7', '98-8D-46-DE-EF-09',
-                      'B4-2E-99-F3-C6-2E']
+                      'B4-2E-99-F3-C6-2E', '2C-F0-5D-6E-A8-BF', '00-E0-4C-B4-07-CF']
 device_registration = DeviceValidation(registered_devices)
+running_as_admin()
 
 # Change the working directory to the folder this script is in.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -259,7 +262,7 @@ def run():
 
                 stop()
             else:
-                # TODO: Add right click to anvil to skip the animation.
+                # TODO: Add right click to the anvil to skip the animation.
                 sleep(4.5)
 
 
@@ -285,4 +288,5 @@ if device_registration.is_device_legal():
             stop()
             break
 
-# pyinstaller.exe -F .\main.py --paths C:\Users\undefined\AppData\Local\Programs\Python\Python39-32\Lib\site-packages
+# pyinstaller .\main.spec
+# datas=[('items', 'items'), ('confirmButton1.jpg', '.'), ('confirmButton2.jpg', '.'), ('upgradeScroll.jpg', '.')],
